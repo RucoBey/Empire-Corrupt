@@ -1,7 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <script src="https://telegram.org/js/games.js"></script>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+const tg = window.Telegram.WebApp;
+
+tg.ready();
+tg.expand();
+  <head>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -632,7 +638,22 @@
 // ============================================================
 //  GAME STATE
 // ============================================================
-const state = {
+  const SUPABASE_URL = "https://tjaxporolsdkyyfampha.supabase.co";
+const SUPABASE_KEY = "sb_publishable_W7evFdD6UTtJS0kOF7a6Kg_GZDWFeC_";
+
+const supabase = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+const user = tg.initDataUnsafe?.user;
+
+let playerId = user?.id;
+let username =
+  user?.username ||
+  user?.first_name ||
+  "Player";
+  const state = {
   coins: 0,
   totalCoins: 0,
   totalTaps: 0,
@@ -680,17 +701,28 @@ const TASKS = [
   { id: 't8', name: 'Passive Pro', icon: '🤖', desc: 'Get 10/s passive income', reward: 8000, check: () => state.passiveIncome >= 10, done: false },
 ];
 
-const LEADERBOARD = [
-  { name: 'CryptoKing', coins: 8420000, league: 'LEGEND', avatar: '👑' },
-  { name: 'DiamondHands', coins: 5100000, league: 'DIAMOND', avatar: '💎' },
-  { name: 'TapMaster', coins: 3750000, league: 'PLATINUM', avatar: '🚀' },
-  { name: 'MoonShot99', coins: 2200000, league: 'GOLD', avatar: '🌙' },
-  { name: 'ByteHunter', coins: 1450000, league: 'GOLD', avatar: '🎯' },
-  { name: 'SatoshiGhost', coins: 920000, league: 'SILVER', avatar: '👻' },
-  { name: 'NeonTrader', coins: 580000, league: 'SILVER', avatar: '⚡' },
-  { name: '★ YOU ★', coins: 0, league: 'BRONZE', avatar: '🫵', isMe: true },
-  { name: 'NewPlayer42', coins: 0, league: 'BRONZE', avatar: '🙂' },
-];
+function renderLeaderboard(players) {
+
+  const container =
+    document.getElementById("leaderboardList");
+
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  players.forEach((player, index) => {
+
+    container.innerHTML += `
+      <div class="leaderboard-item">
+        <span>#${index + 1}</span>
+        <span>${player.username}</span>
+        <span>${Number(player.coins).toLocaleString()}</span>
+      </div>
+    `;
+
+  });
+
+}
 
 const FRIENDS = [
   { name: 'Alex_K', coins: 45000, avatar: '😎', bonus: 2250 },
@@ -1045,7 +1077,68 @@ function showToast(msg) {
 // ============================================================
 //  START
 // ============================================================
-init();
+async function initSupabase() {
+
+  const username = playerId.substring(0, 8);
+
+  const { data: existing } = await supabase
+    .from("players")
+    .select("*")
+    .eq("username", username)
+    .maybeSingle();
+
+  if (!existing) {
+    await supabase.from("players").insert({
+      telegram_id: Date.now(),
+      username: username,
+      coins: 0,
+      total_taps: 0,
+      level: 1,
+      passive_income: 0
+    });
+  } else {
+    state.coins = existing.coins || 0;
+    state.totalCoins = existing.coins || 0;
+    state.totalTaps = existing.total_taps || 0;
+    state.level = existing.level || 1;
+    state.passiveIncome = existing.passive_income || 0;
+    updateUI();
+  }
+}
+  init();
+initSupabase();
+loadLeaderboard();
+  async function loadLeaderboard() {
+
+  const { data, error } = await supabase
+    .from("players")
+    .select("username, coins")
+    .order("coins", { ascending: false })
+    .limit(100);
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  renderLeaderboard(data);
+}
+  setInterval(async () => {
+
+  
+
+  await supabase
+    .from("players")
+    .update({
+      coins: state.coins,
+      total_taps: state.totalTaps,
+      level: state.level,
+      passive_income: state.passiveIncome
+    })
+    .eq("telegram_id", playerId)
+
+}, 5000);
+  setInterval(loadLeaderboard, 10000);
 </script>
 </body>
 </html>
