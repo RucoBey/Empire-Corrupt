@@ -1,500 +1,252 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CRYPTO EMPIRE — Tap to Earn</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Telegram & Supabase Scripts -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-const tg = window.Telegram.WebApp;
-
-tg.ready();
-tg.expand();
-  <head>
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>CRYPTO EMPIRE — Tap to Earn</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --gold: #FFD700;
-    --gold2: #FFA500;
-    --neon: #00FFCC;
-    --neon2: #00BFFF;
-    --bg: #080C14;
-    --panel: #0D1420;
-    --panel2: #111C2E;
-    --border: rgba(0,255,204,0.15);
-    --text: #E0F0FF;
-    --muted: #4A6080;
-    --danger: #FF4466;
-  }
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Rajdhani', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-  }
+    :root {
+      --gold: #FFD700;
+      --gold2: #FFA500;
+      --neon: #00FFCC;
+      --neon2: #00BFFF;
+      --bg: #080C14;
+      --panel: #0D1420;
+      --panel2: #111C2E;
+      --border: rgba(0,255,204,0.15);
+      --text: #E0F0FF;
+      --muted: #4A6080;
+      --danger: #FF4466;
+    }
 
-  /* Animated bg grid */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(0,255,204,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,255,204,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Rajdhani', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-  .app { width: 100%; max-width: 420px; min-height: 100vh; display: flex; flex-direction: column; position: relative; z-index: 1; }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,204,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,204,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
 
-  /* ---- HEADER ---- */
-  .header {
-    padding: 12px 16px 8px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: linear-gradient(180deg, rgba(0,255,204,0.07) 0%, transparent 100%);
-    border-bottom: 1px solid var(--border);
-  }
-  .header-left { display: flex; flex-direction: column; }
-  .user-name { font-family: 'Orbitron', monospace; font-size: 13px; color: var(--neon); letter-spacing: 2px; }
-  .user-level { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
-  .header-center { text-align: center; }
-  .game-title { font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 900; background: linear-gradient(135deg, var(--gold), var(--gold2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 3px; }
-  .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-  .league-badge {
-    background: linear-gradient(135deg, #1a2a1a, #0d1a0d);
-    border: 1px solid var(--neon);
-    border-radius: 20px;
-    padding: 3px 10px;
-    font-size: 10px;
-    font-family: 'Orbitron', monospace;
-    color: var(--neon);
-    letter-spacing: 1px;
-  }
-  .settings-btn { font-size: 18px; cursor: pointer; opacity: 0.7; }
+    .app { width: 100%; max-width: 420px; min-height: 100vh; display: flex; flex-direction: column; position: relative; z-index: 1; }
 
-  /* ---- COIN DISPLAY ---- */
-  .coin-display {
-    padding: 16px;
-    text-align: center;
-  }
-  .coin-amount {
-    font-family: 'Orbitron', monospace;
-    font-size: 38px;
-    font-weight: 900;
-    background: linear-gradient(135deg, #FFD700, #FF8C00, #FFD700);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shimmer 3s linear infinite;
-    line-height: 1;
-  }
-  @keyframes shimmer { to { background-position: 200% center; } }
-  .coin-label { font-size: 12px; color: var(--muted); letter-spacing: 3px; margin-top: 2px; }
+    /* ---- HEADER ---- */
+    .header {
+      padding: 12px 16px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(180deg, rgba(0,255,204,0.07) 0%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .header-left { display: flex; flex-direction: column; }
+    .user-name { font-family: 'Orbitron', monospace; font-size: 13px; color: var(--neon); letter-spacing: 2px; text-transform: uppercase; }
+    .user-level { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+    .header-center { text-align: center; }
+    .game-title { font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 900; background: linear-gradient(135deg, var(--gold), var(--gold2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 3px; }
+    .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+    .league-badge {
+      background: linear-gradient(135deg, #1a2a1a, #0d1a0d);
+      border: 1px solid var(--neon);
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 10px;
+      font-family: 'Orbitron', monospace;
+      color: var(--neon);
+      letter-spacing: 1px;
+    }
 
-  /* ---- STATS ROW ---- */
-  .stats-row {
-    display: flex;
-    gap: 8px;
-    padding: 0 16px 12px;
-  }
-  .stat-card {
-    flex: 1;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 8px 10px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .stat-card::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--neon), transparent);
-  }
-  .stat-val { font-family: 'Orbitron', monospace; font-size: 14px; font-weight: 700; color: var(--gold); }
-  .stat-lbl { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-top: 1px; }
+    /* ---- COIN DISPLAY ---- */
+    .coin-display { padding: 16px; text-align: center; }
+    .coin-amount {
+      font-family: 'Orbitron', monospace;
+      font-size: 38px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #FFD700, #FF8C00, #FFD700);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shimmer 3s linear infinite;
+      line-height: 1;
+    }
+    @keyframes shimmer { to { background-position: 200% center; } }
+    .coin-label { font-size: 12px; color: var(--muted); letter-spacing: 3px; margin-top: 2px; }
 
-  /* ---- PROGRESS BAR ---- */
-  .level-section { padding: 0 16px 12px; }
-  .level-info { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 5px; }
-  .level-info span:last-child { color: var(--neon); font-family: 'Orbitron', monospace; }
-  .progress-track {
-    height: 6px;
-    background: rgba(255,255,255,0.05);
-    border-radius: 3px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-  }
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--neon2), var(--neon));
-    border-radius: 3px;
-    transition: width 0.5s ease;
-    box-shadow: 0 0 8px var(--neon);
-  }
+    /* ---- STATS ROW ---- */
+    .stats-row { display: flex; gap: 8px; padding: 0 16px 12px; }
+    .stat-card {
+      flex: 1;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 10px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--neon), transparent);
+    }
+    .stat-val { font-family: 'Orbitron', monospace; font-size: 14px; font-weight: 700; color: var(--gold); }
+    .stat-lbl { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-top: 1px; }
 
-  /* ---- TAP AREA ---- */
-  .tap-area {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px;
-    position: relative;
-    min-height: 260px;
-  }
+    /* ---- PROGRESS BAR ---- */
+    .level-section { padding: 0 16px 12px; }
+    .level-info { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+    .level-info span:last-child { color: var(--neon); font-family: 'Orbitron', monospace; }
+    .progress-track { height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; border: 1px solid var(--border); }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--neon2), var(--neon)); border-radius: 3px; transition: width 0.5s ease; box-shadow: 0 0 8px var(--neon); }
 
-  .tap-orb-wrapper {
-    position: relative;
-    width: 220px;
-    height: 220px;
-  }
+    /* ---- TAP AREA ---- */
+    .tap-area { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px; position: relative; min-height: 260px; }
+    .tap-orb-wrapper { position: relative; width: 220px; height: 220px; }
+    
+    .ring { position: absolute; border-radius: 50%; border: 1px solid; animation: ring-pulse 3s ease-in-out infinite; pointer-events: none; }
+    .ring-1 { inset: -20px; border-color: rgba(0,255,204,0.12); animation-delay: 0s; }
+    .ring-2 { inset: -40px; border-color: rgba(0,255,204,0.07); animation-delay: 0.5s; }
+    .ring-3 { inset: -60px; border-color: rgba(0,255,204,0.04); animation-delay: 1s; }
+    @keyframes ring-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.04); opacity: 0.6; } }
 
-  /* Outer glow rings */
-  .ring {
-    position: absolute;
-    border-radius: 50%;
-    border: 1px solid;
-    animation: ring-pulse 3s ease-in-out infinite;
-    pointer-events: none;
-  }
-  .ring-1 { inset: -20px; border-color: rgba(0,255,204,0.12); animation-delay: 0s; }
-  .ring-2 { inset: -40px; border-color: rgba(0,255,204,0.07); animation-delay: 0.5s; }
-  .ring-3 { inset: -60px; border-color: rgba(0,255,204,0.04); animation-delay: 1s; }
-  @keyframes ring-pulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.04); opacity: 0.6; }
-  }
+    .tap-orb {
+      width: 220px; height: 220px; border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #1a3a5c, #050d1a 70%);
+      border: 2px solid rgba(0,255,204,0.3);
+      box-shadow: 0 0 30px rgba(0,255,204,0.15), 0 0 60px rgba(0,191,255,0.1), inset 0 0 40px rgba(0,0,0,0.5);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: transform 0.1s ease, box-shadow 0.1s ease; position: relative; overflow: hidden;
+    }
+    .tap-orb::before { content: ''; position: absolute; top: 10%; left: 15%; width: 30%; height: 20%; background: radial-gradient(ellipse, rgba(255,255,255,0.12) 0%, transparent 70%); border-radius: 50%; pointer-events: none; }
+    .tap-orb:active, .tap-orb.tapped { transform: scale(0.93); box-shadow: 0 0 50px rgba(0,255,204,0.4), 0 0 100px rgba(0,191,255,0.2), inset 0 0 40px rgba(0,0,0,0.5); }
+    .orb-icon { font-size: 80px; pointer-events: none; filter: drop-shadow(0 0 20px rgba(255,215,0,0.6)); }
 
-  .tap-orb {
-    width: 220px;
-    height: 220px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 35%, #1a3a5c, #050d1a 70%);
-    border: 2px solid rgba(0,255,204,0.3);
-    box-shadow:
-      0 0 30px rgba(0,255,204,0.15),
-      0 0 60px rgba(0,191,255,0.1),
-      inset 0 0 40px rgba(0,0,0,0.5);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
-    position: relative;
-    overflow: hidden;
-  }
+    /* Floating +N labels */
+    .float-label { position: fixed; font-family: 'Orbitron', monospace; font-size: 22px; font-weight: 900; color: var(--gold); text-shadow: 0 0 10px rgba(255,215,0,0.8); pointer-events: none; animation: float-up 1.2s ease-out forwards; z-index: 999; }
+    @keyframes float-up { 0% { opacity: 1; transform: translateY(0) scale(1); } 80% { opacity: 0.8; transform: translateY(-80px) scale(1.2); } 100% { opacity: 0; transform: translateY(-100px) scale(0.8); } }
 
-  .tap-orb::before {
-    content: '';
-    position: absolute;
-    top: 10%; left: 15%;
-    width: 30%; height: 20%;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.12) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-  }
+    /* ---- ENERGY BAR ---- */
+    .energy-section { padding: 0 16px 10px; }
+    .energy-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .energy-label { font-size: 11px; color: var(--muted); letter-spacing: 2px; display: flex; align-items: center; gap: 5px; }
+    .energy-label::before { content: '⚡'; font-size: 12px; }
+    .energy-count { font-family: 'Orbitron', monospace; font-size: 11px; color: #FFD700; }
+    .energy-track { height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,165,0,0.2); }
+    .energy-fill { height: 100%; background: linear-gradient(90deg, #FF6600, #FFD700, #FFFF00); border-radius: 4px; transition: width 0.3s ease; box-shadow: 0 0 8px rgba(255,215,0,0.5); }
 
-  .tap-orb:active, .tap-orb.tapped {
-    transform: scale(0.93);
-    box-shadow:
-      0 0 50px rgba(0,255,204,0.4),
-      0 0 100px rgba(0,191,255,0.2),
-      inset 0 0 40px rgba(0,0,0,0.5);
-  }
+    /* ---- BOTTOM NAV ---- */
+    .bottom-nav { display: flex; background: var(--panel); border-top: 1px solid var(--border); padding: 8px 0 max(8px, env(safe-area-inset-bottom)); }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 4px; cursor: pointer; transition: all 0.2s; position: relative; }
+    .nav-item.active .nav-icon { filter: drop-shadow(0 0 6px var(--neon)); }
+    .nav-item.active .nav-lbl { color: var(--neon); }
+    .nav-item:not(.active) { opacity: 0.5; }
+    .nav-icon { font-size: 22px; }
+    .nav-lbl { font-size: 9px; letter-spacing: 1px; font-family: 'Orbitron', monospace; }
+    .nav-badge { position: absolute; top: 2px; right: calc(50% - 18px); background: var(--danger); color: white; font-size: 9px; font-weight: 700; border-radius: 8px; padding: 1px 5px; font-family: 'Orbitron', monospace; }
 
-  .orb-icon { font-size: 80px; pointer-events: none; filter: drop-shadow(0 0 20px rgba(255,215,0,0.6)); }
+    /* ---- SCREENS ---- */
+    .screen { display: none; flex: 1; overflow-y: auto; }
+    .screen.active { display: flex; flex-direction: column; }
 
-  /* Floating +N labels */
-  .float-label {
-    position: fixed;
-    font-family: 'Orbitron', monospace;
-    font-size: 22px;
-    font-weight: 900;
-    color: var(--gold);
-    text-shadow: 0 0 10px rgba(255,215,0,0.8);
-    pointer-events: none;
-    animation: float-up 1.2s ease-out forwards;
-    z-index: 999;
-  }
-  @keyframes float-up {
-    0%   { opacity: 1; transform: translateY(0) scale(1); }
-    80%  { opacity: 0.8; transform: translateY(-80px) scale(1.2); }
-    100% { opacity: 0; transform: translateY(-100px) scale(0.8); }
-  }
+    /* ---- UPGRADES SCREEN ---- */
+    .screen-title { font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 700; color: var(--neon); padding: 16px 16px 8px; letter-spacing: 2px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+    .upgrades-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 12px 16px; }
+    .upgrade-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 12px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
+    .upgrade-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0; transition: opacity 0.2s; }
+    .upgrade-card:hover::before, .upgrade-card:active::before { opacity: 1; }
+    .upgrade-card.maxed { opacity: 0.5; cursor: default; }
+    .upgrade-card.maxed::after { content: 'MAX'; position: absolute; top: 8px; right: 8px; font-size: 9px; font-family: 'Orbitron', monospace; color: var(--neon); border: 1px solid var(--neon); border-radius: 4px; padding: 2px 5px; }
+    .upgrade-card.affordable { border-color: rgba(255,215,0,0.4); }
+    .upgrade-icon { font-size: 28px; margin-bottom: 6px; }
+    .upgrade-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+    .upgrade-desc { font-size: 10px; color: var(--muted); margin-bottom: 8px; line-height: 1.3; }
+    .upgrade-level { font-size: 10px; color: var(--neon); font-family: 'Orbitron', monospace; margin-bottom: 6px; }
+    .upgrade-cost { display: flex; align-items: center; gap: 4px; font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; color: var(--gold); }
 
-  /* ---- ENERGY BAR ---- */
-  .energy-section {
-    padding: 0 16px 10px;
-  }
-  .energy-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-  }
-  .energy-label { font-size: 11px; color: var(--muted); letter-spacing: 2px; display: flex; align-items: center; gap: 5px; }
-  .energy-label::before { content: '⚡'; font-size: 12px; }
-  .energy-count { font-family: 'Orbitron', monospace; font-size: 11px; color: #FFD700; }
-  .energy-track {
-    height: 8px;
-    background: rgba(255,255,255,0.05);
-    border-radius: 4px;
-    overflow: hidden;
-    border: 1px solid rgba(255,165,0,0.2);
-  }
-  .energy-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #FF6600, #FFD700, #FFFF00);
-    border-radius: 4px;
-    transition: width 0.3s ease;
-    box-shadow: 0 0 8px rgba(255,215,0,0.5);
-  }
+    /* ---- TASKS SCREEN ---- */
+    .tasks-list { padding: 0 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .task-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 14px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s; }
+    .task-card.done { opacity: 0.5; }
+    .task-card:not(.done):hover { border-color: rgba(0,255,204,0.3); }
+    .task-icon { font-size: 28px; flex-shrink: 0; }
+    .task-info { flex: 1; }
+    .task-name { font-size: 14px; font-weight: 700; }
+    .task-reward { font-size: 11px; color: var(--gold); font-family: 'Orbitron', monospace; margin-top: 2px; }
+    .task-status { font-size: 20px; flex-shrink: 0; }
 
-  /* ---- BOTTOM NAV ---- */
-  .bottom-nav {
-    display: flex;
-    background: var(--panel);
-    border-top: 1px solid var(--border);
-    padding: 8px 0 max(8px, env(safe-area-inset-bottom));
-  }
-  .nav-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    padding: 6px 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-  }
-  .nav-item.active .nav-icon { filter: drop-shadow(0 0 6px var(--neon)); }
-  .nav-item.active .nav-lbl { color: var(--neon); }
-  .nav-item:not(.active) { opacity: 0.5; }
-  .nav-icon { font-size: 22px; }
-  .nav-lbl { font-size: 9px; letter-spacing: 1px; font-family: 'Orbitron', monospace; }
-  .nav-badge {
-    position: absolute;
-    top: 2px; right: calc(50% - 18px);
-    background: var(--danger);
-    color: white;
-    font-size: 9px;
-    font-weight: 700;
-    border-radius: 8px;
-    padding: 1px 5px;
-    font-family: 'Orbitron', monospace;
-  }
+    /* ---- LEADERBOARD SCREEN ---- */
+    .leaderboard-list { padding: 0 12px 16px; display: flex; flex-direction: column; gap: 6px; }
+    .lb-item { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+    .lb-item.me { border-color: rgba(0,255,204,0.4); background: rgba(0,255,204,0.05); }
+    .lb-rank { font-family: 'Orbitron', monospace; font-size: 14px; font-weight: 900; width: 28px; text-align: center; }
+    .lb-rank.gold { color: #FFD700; }
+    .lb-rank.silver { color: #C0C0C0; }
+    .lb-rank.bronze { color: #CD7F32; }
+    .lb-avatar { font-size: 26px; }
+    .lb-info { flex: 1; }
+    .lb-name { font-size: 13px; font-weight: 700; }
+    .lb-coins { font-size: 11px; color: var(--gold); font-family: 'Orbitron', monospace; }
+    .lb-badge { font-size: 11px; color: var(--neon); font-family: 'Orbitron', monospace; }
 
-  /* ---- SCREENS ---- */
-  .screen { display: none; flex: 1; overflow-y: auto; }
-  .screen.active { display: flex; flex-direction: column; }
+    /* ---- FRIENDS SCREEN ---- */
+    .friends-section { padding: 12px 16px; }
+    .referral-box { background: linear-gradient(135deg, rgba(0,255,204,0.08), rgba(0,191,255,0.05)); border: 1px solid rgba(0,255,204,0.3); border-radius: 16px; padding: 18px; text-align: center; margin-bottom: 16px; }
+    .referral-title { font-family: 'Orbitron', monospace; font-size: 14px; color: var(--neon); margin-bottom: 6px; }
+    .referral-desc { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 14px; }
+    .referral-reward { font-family: 'Orbitron', monospace; font-size: 20px; color: var(--gold); margin-bottom: 14px; }
+    .invite-btn { background: linear-gradient(135deg, var(--neon2), var(--neon)); color: #000; border: none; border-radius: 10px; padding: 12px 28px; font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 1px; transition: all 0.2s; }
+    .invite-btn:active { transform: scale(0.97); }
+    .friends-list { display: flex; flex-direction: column; gap: 8px; }
+    .friend-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+    .friend-avatar { font-size: 28px; }
+    .friend-info { flex: 1; }
+    .friend-name { font-size: 13px; font-weight: 700; }
+    .friend-coins { font-size: 11px; color: var(--gold); font-family: 'Orbitron', monospace; }
+    .friend-bonus { font-size: 11px; color: var(--neon); }
 
-  /* ---- UPGRADES SCREEN ---- */
-  .screen-title {
-    font-family: 'Orbitron', monospace;
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--neon);
-    padding: 16px 16px 8px;
-    letter-spacing: 2px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 12px;
-  }
-  .upgrades-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    padding: 0 12px 16px;
-  }
-  .upgrade-card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-  .upgrade-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-  .upgrade-card:hover::before, .upgrade-card:active::before { opacity: 1; }
-  .upgrade-card.maxed { opacity: 0.5; cursor: default; }
-  .upgrade-card.maxed::after { content: 'MAX'; position: absolute; top: 8px; right: 8px; font-size: 9px; font-family: 'Orbitron', monospace; color: var(--neon); border: 1px solid var(--neon); border-radius: 4px; padding: 2px 5px; }
-  .upgrade-card.affordable { border-color: rgba(255,215,0,0.4); }
-  .upgrade-icon { font-size: 28px; margin-bottom: 6px; }
-  .upgrade-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
-  .upgrade-desc { font-size: 10px; color: var(--muted); margin-bottom: 8px; line-height: 1.3; }
-  .upgrade-level { font-size: 10px; color: var(--neon); font-family: 'Orbitron', monospace; margin-bottom: 6px; }
-  .upgrade-cost {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-family: 'Orbitron', monospace;
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--gold);
-  }
+    /* ---- POPUP TOAST ---- */
+    .toast {
+      position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(135deg, #1a2a1a, #0d1a0d); border: 1px solid var(--neon); border-radius: 20px;
+      padding: 8px 20px; font-family: 'Orbitron', monospace; font-size: 12px; color: var(--neon);
+      z-index: 1000; animation: toast-in 0.3s ease, toast-out 0.3s ease 1.7s forwards; white-space: nowrap; letter-spacing: 1px;
+    }
+    @keyframes toast-in { from { opacity: 0; transform: translateX(-50%) translateY(-10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+    @keyframes toast-out { to { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
 
-  /* ---- TASKS SCREEN ---- */
-  .tasks-list { padding: 0 12px 16px; display: flex; flex-direction: column; gap: 8px; }
-  .task-card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 14px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .task-card.done { opacity: 0.5; }
-  .task-card:not(.done):hover { border-color: rgba(0,255,204,0.3); }
-  .task-icon { font-size: 28px; flex-shrink: 0; }
-  .task-info { flex: 1; }
-  .task-name { font-size: 14px; font-weight: 700; }
-  .task-reward { font-size: 11px; color: var(--gold); font-family: 'Orbitron', monospace; margin-top: 2px; }
-  .task-status { font-size: 20px; flex-shrink: 0; }
+    .boost-pill { position: absolute; top: -10px; right: -10px; background: linear-gradient(135deg, #FF4466, #FF0066); border-radius: 20px; padding: 4px 10px; font-family: 'Orbitron', monospace; font-size: 10px; color: white; font-weight: 700; animation: bounce-pill 2s ease-in-out infinite; cursor: pointer; box-shadow: 0 0 10px rgba(255,0,100,0.5); z-index: 10; }
+    @keyframes bounce-pill { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 
-  /* ---- LEADERBOARD SCREEN ---- */
-  .leaderboard-list { padding: 0 12px 16px; display: flex; flex-direction: column; gap: 6px; }
-  .lb-item {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.2s;
-  }
-  .lb-item.me { border-color: rgba(0,255,204,0.4); background: rgba(0,255,204,0.05); }
-  .lb-rank { font-family: 'Orbitron', monospace; font-size: 14px; font-weight: 900; width: 28px; text-align: center; }
-  .lb-rank.gold { color: #FFD700; }
-  .lb-rank.silver { color: #C0C0C0; }
-  .lb-rank.bronze { color: #CD7F32; }
-  .lb-avatar { font-size: 26px; }
-  .lb-info { flex: 1; }
-  .lb-name { font-size: 13px; font-weight: 700; }
-  .lb-coins { font-size: 11px; color: var(--gold); font-family: 'Orbitron', monospace; }
-  .lb-badge { font-size: 11px; color: var(--neon); font-family: 'Orbitron', monospace; }
-
-  /* ---- FRIENDS SCREEN ---- */
-  .friends-section { padding: 12px 16px; }
-  .referral-box {
-    background: linear-gradient(135deg, rgba(0,255,204,0.08), rgba(0,191,255,0.05));
-    border: 1px solid rgba(0,255,204,0.3);
-    border-radius: 16px;
-    padding: 18px;
-    text-align: center;
-    margin-bottom: 16px;
-  }
-  .referral-title { font-family: 'Orbitron', monospace; font-size: 14px; color: var(--neon); margin-bottom: 6px; }
-  .referral-desc { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 14px; }
-  .referral-reward { font-family: 'Orbitron', monospace; font-size: 20px; color: var(--gold); margin-bottom: 14px; }
-  .invite-btn {
-    background: linear-gradient(135deg, var(--neon2), var(--neon));
-    color: #000;
-    border: none;
-    border-radius: 10px;
-    padding: 12px 28px;
-    font-family: 'Orbitron', monospace;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    letter-spacing: 1px;
-    transition: all 0.2s;
-  }
-  .invite-btn:active { transform: scale(0.97); }
-
-  .friends-list { display: flex; flex-direction: column; gap: 8px; }
-  .friend-card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 12px 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .friend-avatar { font-size: 28px; }
-  .friend-info { flex: 1; }
-  .friend-name { font-size: 13px; font-weight: 700; }
-  .friend-coins { font-size: 11px; color: var(--gold); font-family: 'Orbitron', monospace; }
-  .friend-bonus { font-size: 11px; color: var(--neon); }
-
-  /* ---- POPUP TOAST ---- */
-  .toast {
-    position: fixed;
-    top: 70px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: linear-gradient(135deg, #1a2a1a, #0d1a0d);
-    border: 1px solid var(--neon);
-    border-radius: 20px;
-    padding: 8px 20px;
-    font-family: 'Orbitron', monospace;
-    font-size: 12px;
-    color: var(--neon);
-    z-index: 1000;
-    animation: toast-in 0.3s ease, toast-out 0.3s ease 1.7s forwards;
-    white-space: nowrap;
-    letter-spacing: 1px;
-  }
-  @keyframes toast-in { from { opacity: 0; transform: translateX(-50%) translateY(-10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-  @keyframes toast-out { to { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
-
-  /* Boost popup */
-  .boost-pill {
-    position: absolute;
-    top: -10px; right: -10px;
-    background: linear-gradient(135deg, #FF4466, #FF0066);
-    border-radius: 20px;
-    padding: 4px 10px;
-    font-family: 'Orbitron', monospace;
-    font-size: 10px;
-    color: white;
-    font-weight: 700;
-    animation: bounce-pill 2s ease-in-out infinite;
-    cursor: pointer;
-    box-shadow: 0 0 10px rgba(255,0,100,0.5);
-    z-index: 10;
-  }
-  @keyframes bounce-pill {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-  }
-
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 3px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-</style>
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  </style>
 </head>
 <body>
 <div class="app">
@@ -515,14 +267,11 @@ tg.expand();
 
   <!-- MAIN TAP SCREEN -->
   <div class="screen active" id="screen-tap">
-
-    <!-- Coin Display -->
     <div class="coin-display">
       <div class="coin-amount" id="coinDisplay">0</div>
       <div class="coin-label">COINS</div>
     </div>
 
-    <!-- Stats Row -->
     <div class="stats-row">
       <div class="stat-card">
         <div class="stat-val" id="tapPowerDisplay">+1</div>
@@ -538,7 +287,6 @@ tg.expand();
       </div>
     </div>
 
-    <!-- Level Progress -->
     <div class="level-section">
       <div class="level-info">
         <span id="levelLabel">LEVEL 1</span>
@@ -549,7 +297,6 @@ tg.expand();
       </div>
     </div>
 
-    <!-- Tap Area -->
     <div class="tap-area">
       <div class="tap-orb-wrapper">
         <div class="ring ring-1"></div>
@@ -562,7 +309,6 @@ tg.expand();
       </div>
     </div>
 
-    <!-- Energy Bar -->
     <div class="energy-section">
       <div class="energy-header">
         <div class="energy-label">ENERGY</div>
@@ -572,8 +318,7 @@ tg.expand();
         <div class="energy-fill" id="energyBar" style="width:100%"></div>
       </div>
     </div>
-
-  </div><!-- /screen-tap -->
+  </div>
 
   <!-- UPGRADES SCREEN -->
   <div class="screen" id="screen-upgrades">
@@ -620,7 +365,7 @@ tg.expand();
     <div class="nav-item" onclick="showScreen('tasks', this)">
       <div class="nav-icon">📋</div>
       <div class="nav-lbl">MISSIONS</div>
-      <div class="nav-badge" id="taskBadge">3</div>
+      <div class="nav-badge" id="taskBadge">0</div>
     </div>
     <div class="nav-item" onclick="showScreen('leaderboard', this)">
       <div class="nav-icon">🏆</div>
@@ -632,28 +377,27 @@ tg.expand();
     </div>
   </div>
 
-</div><!-- /app -->
+</div>
 
 <script>
 // ============================================================
-//  GAME STATE
+//  TELEGRAM & SUPABASE GLOBAL CONFIG
 // ============================================================
-  const SUPABASE_URL = "https://tjaxporolsdkyyfampha.supabase.co";
+const tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
+
+const SUPABASE_URL = "https://tjaxporolsdkyyfampha.supabase.co";
 const SUPABASE_KEY = "sb_publishable_W7evFdD6UTtJS0kOF7a6Kg_GZDWFeC_";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const supabase = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
+const telegramUser = tg.initDataUnsafe?.user;
+// Test ortamında id yoksa geçici id üret, varsa Telegram'dan al
+let playerId = telegramUser ? telegramUser.id : 99999999; 
+let username = telegramUser ? (telegramUser.username || telegramUser.first_name) : "Player";
 
-const user = tg.initDataUnsafe?.user;
-
-let playerId = user?.id;
-let username =
-  user?.username ||
-  user?.first_name ||
-  "Player";
-  const state = {
+// Başlangıç Oyun Durumu
+const state = {
   coins: 0,
   totalCoins: 0,
   totalTaps: 0,
@@ -696,53 +440,121 @@ const TASKS = [
   { id: 't3', name: 'Coin Collector', icon: '🪙', desc: 'Earn 1,000 coins', reward: 1000, check: () => state.totalCoins >= 1000, done: false },
   { id: 't4', name: 'Upgrade Master', icon: '⚡', desc: 'Buy your first upgrade', reward: 2000, check: () => UPGRADES.some(u => u.level > 0), done: false },
   { id: 't5', name: 'Power Up!', icon: '💪', desc: 'Reach 5 tap power', reward: 3000, check: () => state.tapPower >= 5, done: false },
-  { id: 't6', name: 'Millionaire', icon: '💰', desc: 'Earn 100,000 coins total', reward: 10000, check: () => state.totalCoins >= 100000, done: false },
-  { id: 't7', name: 'Silver League', icon: '🥈', desc: 'Reach Level 2', reward: 5000, check: () => state.level >= 2, done: false },
-  { id: 't8', name: 'Passive Pro', icon: '🤖', desc: 'Get 10/s passive income', reward: 8000, check: () => state.passiveIncome >= 10, done: false },
 ];
-
-function renderLeaderboard(players) {
-
-  const container =
-    document.getElementById("leaderboardList");
-
-  if (!container) return;
-
-  container.innerHTML = "";
-
-  players.forEach((player, index) => {
-
-    container.innerHTML += `
-      <div class="leaderboard-item">
-        <span>#${index + 1}</span>
-        <span>${player.username}</span>
-        <span>${Number(player.coins).toLocaleString()}</span>
-      </div>
-    `;
-
-  });
-
-}
 
 const FRIENDS = [
   { name: 'Alex_K', coins: 45000, avatar: '😎', bonus: 2250 },
-  { name: 'CryptoSis', coins: 12000, avatar: '🦊', bonus: 600 },
-  { name: 'TechBro99', coins: 8500, avatar: '🤓', bonus: 425 },
+  { name: 'CryptoSis', coins: 12000, avatar: '🦊', bonus: 600 }
 ];
 
-let energyRegen = 1; // per second
+let energyRegen = 1;
 
 // ============================================================
-//  INIT
+//  MAIN INIT FLOW
 // ============================================================
-function init() {
+async function init() {
+  document.getElementById('userName').textContent = username.toUpperCase();
+  
+  // Önce veritabanından güncel bilgileri çekiyoruz
+  await initSupabase(); 
+  
+  // Sonra UI elementlerini render ediyoruz
   renderUpgrades();
   renderTasks();
-  renderLeaderboard();
+  await loadLeaderboard();
   renderFriends();
   setupTap();
   updateUI();
   startLoops();
+}
+
+// ============================================================
+//  SUPABASE BACKEND STORAGE LOGIC
+// ============================================================
+async function initSupabase() {
+  try {
+    const { data: existing, error } = await supabase
+      .from("players")
+      .select("*")
+      .eq("telegram_id", playerId)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!existing) {
+      // Yeni Kullanıcı Oluştur
+      await supabase.from("players").insert({
+        telegram_id: playerId,
+        username: username,
+        coins: 0,
+        total_taps: 0,
+        level: 1,
+        passive_income: 0
+      });
+    } else {
+      // Var olan verileri State'e aktar
+      state.coins = existing.coins || 0;
+      state.totalCoins = existing.coins || 0; // Toplam kazanılanı veritabanından alıyoruz
+      state.totalTaps = existing.total_taps || 0;
+      state.level = existing.level || 1;
+      state.passiveIncome = existing.passive_income || 0;
+    }
+  } catch (err) {
+    console.error("Supabase Init Hatası:", err);
+  }
+}
+
+async function savePlayerData() {
+  await supabase
+    .from("players")
+    .update({
+      coins: state.coins,
+      total_taps: state.totalTaps,
+      level: state.level,
+      passive_income: state.passiveIncome
+    })
+    .eq("telegram_id", playerId);
+}
+
+async function loadLeaderboard() {
+  const { data, error } = await supabase
+    .from("players")
+    .select("username, coins, level")
+    .order("coins", { ascending: false })
+    .limit(50);
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+  renderLeaderboardUI(data);
+}
+
+// ============================================================
+//  LEADERBOARD UI RENDERING
+// ============================================================
+function renderLeaderboardUI(players) {
+  const container = document.getElementById("leaderboardList");
+  if (!container) return;
+  container.innerHTML = "";
+
+  players.forEach((player, index) => {
+    const isMe = player.username === username;
+    const rankText = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
+    const leagueName = LEVELS[Math.min(player.level - 1, LEVELS.length - 1)].name;
+
+    container.innerHTML += `
+      <div class="lb-item ${isMe ? 'me' : ''}">
+        <div class="lb-rank">${rankText}</div>
+        <div class="lb-avatar">👤</div>
+        <div class="lb-info">
+          <div class="lb-name">${player.username} ${isMe ? '(YOU)' : ''}</div>
+          <div class="lb-coins">🪙 ${fmt(player.coins)}</div>
+        </div>
+        <div class="lb-badge">${leagueName}</div>
+      </div>
+    `;
+  });
 }
 
 // ============================================================
@@ -751,22 +563,19 @@ function init() {
 function setupTap() {
   const orb = document.getElementById('tapOrb');
   orb.addEventListener('click', handleTap);
-  orb.addEventListener('touchstart', (e) => { e.preventDefault(); handleTap(e.touches[0]); }, { passive: false });
 }
 
 function handleTap(e) {
-  if (state.energy <= 0) { showToast('⚡ OUT OF ENERGY! Wait for regen...'); return; }
+  if (state.energy <= 0) { showToast('⚡ OUT OF ENERGY!'); return; }
 
   const power = state.boostActive ? state.tapPower * 5 : state.tapPower;
-  const cost = 1;
-
+  
   state.coins += power;
   state.totalCoins += power;
   state.totalTaps++;
   state.xp += power;
-  state.energy = Math.max(0, state.energy - cost);
+  state.energy = Math.max(0, state.energy - 1);
 
-  // Visual
   const orb = document.getElementById('tapOrb');
   orb.classList.add('tapped');
   setTimeout(() => orb.classList.remove('tapped'), 100);
@@ -781,10 +590,12 @@ function spawnFloat(e, text) {
   const el = document.createElement('div');
   el.className = 'float-label';
   el.textContent = text;
-  const x = (e.clientX || e.pageX || window.innerWidth / 2) + (Math.random() * 40 - 20);
-  const y = (e.clientY || e.pageY || window.innerHeight / 2) - 20;
-  el.style.left = x + 'px';
-  el.style.top = y + 'px';
+  
+  const x = e.clientX || (window.innerWidth / 2);
+  const y = e.clientY || (window.innerHeight / 2);
+  
+  el.style.left = (x + (Math.random() * 40 - 20)) + 'px';
+  el.style.top = (y - 20) + 'px';
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 1200);
 }
@@ -794,30 +605,31 @@ function spawnFloat(e, text) {
 // ============================================================
 function useBoost(e) {
   e.stopPropagation();
-  if (state.boostCooldown) { showToast('⏳ BOOST ON COOLDOWN!'); return; }
-  if (state.boostUses <= 0) { showToast('❌ NO BOOST USES LEFT!'); return; }
+  if (state.boostCooldown) { showToast('⏳ COOLDOWN!'); return; }
+  if (state.boostUses <= 0) { showToast('❌ NO USES LEFT!'); return; }
 
   state.boostActive = true;
   state.boostUses--;
   state.boostCooldown = true;
   showToast('🚀 BOOST ACTIVATED! 5x POWER!');
 
-  document.getElementById('boostBtn').textContent = 'ACTIVE!';
-  document.getElementById('boostBtn').style.background = 'linear-gradient(135deg, #00FF88, #00FFCC)';
-  document.getElementById('boostBtn').style.color = '#000';
+  const btn = document.getElementById('boostBtn');
+  btn.textContent = 'ACTIVE!';
+  btn.style.background = 'linear-gradient(135deg, #00FF88, #00FFCC)';
+  btn.style.color = '#000';
 
   setTimeout(() => {
     state.boostActive = false;
-    document.getElementById('boostBtn').textContent = 'COOLDOWN';
-    document.getElementById('boostBtn').style.background = 'linear-gradient(135deg, #444, #222)';
-    document.getElementById('boostBtn').style.color = '#888';
+    btn.textContent = 'COOLDOWN';
+    btn.style.background = 'linear-gradient(135deg, #444, #222)';
+    btn.style.color = '#888';
   }, 10000);
 
   setTimeout(() => {
     state.boostCooldown = false;
-    document.getElementById('boostBtn').textContent = 'BOOST!';
-    document.getElementById('boostBtn').style.background = '';
-    document.getElementById('boostBtn').style.color = '';
+    btn.textContent = 'BOOST!';
+    btn.style.background = '';
+    btn.style.color = '';
     showToast('⚡ BOOST READY!');
   }, 60000);
 }
@@ -856,30 +668,28 @@ function buyUpgrade(u) {
   state.coins -= cost;
   u.level++;
 
-  // Apply effect
   if (u.effect === 'tapPower') state.tapPower += u.effectVal;
   if (u.effect === 'maxEnergy') { state.maxEnergy += u.effectVal; state.energy = Math.min(state.energy + u.effectVal, state.maxEnergy); }
   if (u.effect === 'energyRegen') energyRegen += u.effectVal;
   if (u.effect === 'passive') state.passiveIncome += u.effectVal;
   if (u.effect === 'boostUses') state.boostUses += u.effectVal;
 
-  showToast(`✅ ${u.name} UPGRADED TO LVL ${u.level}!`);
+  showToast(`✅ UPGRADED TO LVL ${u.level}!`);
   renderUpgrades();
   updateUI();
   checkTasks();
 }
 
 // ============================================================
-//  TASKS
+//  TASKS / MISSIONS
 // ============================================================
 function renderTasks() {
   const list = document.getElementById('tasksList');
   list.innerHTML = '';
   let pending = 0;
   TASKS.forEach(t => {
-    const done = t.done;
     const card = document.createElement('div');
-    card.className = 'task-card' + (done ? ' done' : '');
+    card.className = 'task-card' + (t.done ? ' done' : '');
     card.innerHTML = `
       <div class="task-icon">${t.icon}</div>
       <div class="task-info">
@@ -887,13 +697,13 @@ function renderTasks() {
         <div style="font-size:11px;color:var(--muted);margin-top:2px;">${t.desc}</div>
         <div class="task-reward">🪙 +${fmt(t.reward)}</div>
       </div>
-      <div class="task-status">${done ? '✅' : '⬜'}</div>
+      <div class="task-status">${t.done ? '✅' : '⬜'}</div>
     `;
-    if (!done && t.check()) {
+    if (!t.done && t.check()) {
       card.style.borderColor = 'rgba(0,255,100,0.5)';
       card.onclick = () => claimTask(t);
     }
-    if (!done) pending++;
+    if (!t.done) pending++;
     list.appendChild(card);
   });
   const badge = document.getElementById('taskBadge');
@@ -912,47 +722,17 @@ function claimTask(t) {
   t.done = true;
   state.coins += t.reward;
   state.totalCoins += t.reward;
-  showToast(`🎉 MISSION COMPLETE! +${fmt(t.reward)} COINS!`);
+  showToast(`🎉 +${fmt(t.reward)} COINS!`);
   renderTasks();
   updateUI();
 }
 
 // ============================================================
-//  LEADERBOARD
-// ============================================================
-function renderLeaderboard() {
-  const list = document.getElementById('leaderboardList');
-  list.innerHTML = '';
-  const sorted = [...LEADERBOARD].sort((a, b) => b.coins - a.coins);
-  sorted.forEach((p, i) => {
-    if (p.isMe) p.coins = state.totalCoins;
-    const item = document.createElement('div');
-    item.className = 'lb-item' + (p.isMe ? ' me' : '');
-    const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
-    const rankText = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
-    item.innerHTML = `
-      <div class="lb-rank ${rankClass}">${rankText}</div>
-      <div class="lb-avatar">${p.avatar}</div>
-      <div class="lb-info">
-        <div class="lb-name">${p.name}</div>
-        <div class="lb-coins">🪙 ${fmt(p.coins)}</div>
-      </div>
-      <div class="lb-badge">${p.league}</div>
-    `;
-    list.appendChild(item);
-  });
-}
-
-// ============================================================
-//  FRIENDS
+//  FRIENDS & LEAGUE UP
 // ============================================================
 function renderFriends() {
   const list = document.getElementById('friendsList');
   list.innerHTML = '';
-  if (FRIENDS.length === 0) {
-    list.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;font-size:13px;">No friends yet. Invite some!</div>';
-    return;
-  }
   FRIENDS.forEach(f => {
     const card = document.createElement('div');
     card.className = 'friend-card';
@@ -963,7 +743,7 @@ function renderFriends() {
         <div class="friend-coins">🪙 ${fmt(f.coins)} earned</div>
       </div>
       <div class="friend-bonus" style="text-align:right">
-        <div style="font-size:10px;color:var(--muted)">YOUR BONUS</div>
+        <div style="font-size:10px;color:var(--muted)">BONUS</div>
         <div>+${fmt(f.bonus)}</div>
       </div>
     `;
@@ -975,29 +755,18 @@ function copyReferral() {
   showToast('🔗 INVITE LINK COPIED!');
 }
 
-// ============================================================
-//  LEVEL UP
-// ============================================================
 function checkLevelUp() {
   const currentLevelData = LEVELS[state.level - 1];
   if (state.xp >= currentLevelData.xpNeeded && state.level < LEVELS.length) {
     state.level++;
     state.xp = 0;
-    const newLevel = LEVELS[state.level - 1];
-    showToast(`🎉 LEVEL UP! → ${newLevel.name}`);
-    updateLeagueDisplay();
-    renderLeaderboard();
+    showToast(`🎉 LEVEL UP! → ${LEVELS[state.level - 1].name}`);
+    updateUI();
   }
 }
 
-function updateLeagueDisplay() {
-  const lvl = LEVELS[state.level - 1];
-  document.getElementById('leagueBadge').textContent = lvl.name;
-  document.getElementById('userLevelLabel').textContent = `LEVEL ${state.level} · ${lvl.name}`;
-}
-
 // ============================================================
-//  UI UPDATE
+//  UI HELPERS & NAVIGATION
 // ============================================================
 function fmt(n) {
   if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
@@ -1014,57 +783,27 @@ function updateUI() {
   document.getElementById('energyCount').textContent = `${Math.floor(state.energy)} / ${state.maxEnergy}`;
   document.getElementById('energyBar').style.width = (state.energy / state.maxEnergy * 100) + '%';
 
-  const currentLevelData = LEVELS[state.level - 1];
-  const pct = Math.min(state.xp / currentLevelData.xpNeeded * 100, 100);
+  const lvlData = LEVELS[state.level - 1];
+  const pct = Math.min((state.xp / lvlData.xpNeeded) * 100, 100);
   document.getElementById('levelBar').style.width = pct + '%';
   document.getElementById('levelLabel').textContent = 'LEVEL ' + state.level;
-  document.getElementById('levelProgress').textContent = `${fmt(state.xp)} / ${fmt(currentLevelData.xpNeeded)}`;
-  updateLeagueDisplay();
+  document.getElementById('levelProgress').textContent = `${fmt(state.xp)} / ${fmt(lvlData.xpNeeded)}`;
+  
+  document.getElementById('leagueBadge').textContent = lvlData.name;
+  document.getElementById('userLevelLabel').textContent = `LEVEL ${state.level} · ${lvlData.name}`;
 }
 
-// ============================================================
-//  GAME LOOPS
-// ============================================================
-function startLoops() {
-  // Passive income (every second)
-  setInterval(() => {
-    if (state.passiveIncome > 0) {
-      state.coins += state.passiveIncome;
-      state.totalCoins += state.passiveIncome;
-      state.xp += state.passiveIncome;
-      updateUI();
-      checkLevelUp();
-      checkTasks();
-    }
-    // Energy regen
-    if (state.energy < state.maxEnergy) {
-      state.energy = Math.min(state.maxEnergy, state.energy + energyRegen);
-      updateUI();
-    }
-  }, 1000);
-
-  // Leaderboard refresh every 5s
-  setInterval(() => {
-    renderLeaderboard();
-  }, 5000);
-}
-
-// ============================================================
-//  NAVIGATION
-// ============================================================
 function showScreen(name, navEl) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
   if (navEl) navEl.classList.add('active');
+  
   if (name === 'upgrades') renderUpgrades();
   if (name === 'tasks') renderTasks();
-  if (name === 'leaderboard') renderLeaderboard();
+  if (name === 'leaderboard') loadLeaderboard();
 }
 
-// ============================================================
-//  TOAST
-// ============================================================
 function showToast(msg) {
   document.querySelectorAll('.toast').forEach(t => t.remove());
   const el = document.createElement('div');
@@ -1075,70 +814,39 @@ function showToast(msg) {
 }
 
 // ============================================================
-//  START
+//  GAME REALTIME LOOPS
 // ============================================================
-async function initSupabase() {
-
-  const username = playerId.substring(0, 8);
-
-  const { data: existing } = await supabase
-    .from("players")
-    .select("*")
-    .eq("username", username)
-    .maybeSingle();
-
-  if (!existing) {
-    await supabase.from("players").insert({
-      telegram_id: Date.now(),
-      username: username,
-      coins: 0,
-      total_taps: 0,
-      level: 1,
-      passive_income: 0
-    });
-  } else {
-    state.coins = existing.coins || 0;
-    state.totalCoins = existing.coins || 0;
-    state.totalTaps = existing.total_taps || 0;
-    state.level = existing.level || 1;
-    state.passiveIncome = existing.passive_income || 0;
+function startLoops() {
+  // Her saniye: Pasif Gelir ve Enerji Yenilenmesi
+  setInterval(() => {
+    if (state.passiveIncome > 0) {
+      state.coins += state.passiveIncome;
+      state.totalCoins += state.passiveIncome;
+      state.xp += state.passiveIncome;
+      checkLevelUp();
+      checkTasks();
+    }
+    if (state.energy < state.maxEnergy) {
+      state.energy = Math.min(state.maxEnergy, state.energy + energyRegen);
+    }
     updateUI();
-  }
-}
-  init();
-initSupabase();
-loadLeaderboard();
-  async function loadLeaderboard() {
+  }, 1000);
 
-  const { data, error } = await supabase
-    .from("players")
-    .select("username, coins")
-    .order("coins", { ascending: false })
-    .limit(100);
-
-  if (error) {
-    console.error(error);
-    return;
-  }
-
-  renderLeaderboard(data);
-}
+  // Her 5 saniyede bir verileri Supabase'e kaydet (Auto-save)
   setInterval(async () => {
+    await savePlayerData();
+  }, 5000);
 
-  
+  // Her 15 saniyede bir Liderlik Tablosunu güncelle
+  setInterval(async () => {
+    await loadLeaderboard();
+  }, 15000);
+}
 
-  await supabase
-    .from("players")
-    .update({
-      coins: state.coins,
-      total_taps: state.totalTaps,
-      level: state.level,
-      passive_income: state.passiveIncome
-    })
-    .eq("telegram_id", playerId)
-
-}, 5000);
-  setInterval(loadLeaderboard, 10000);
+// Oyunu çalıştır
+window.onload = () => {
+  init();
+};
 </script>
 </body>
 </html>
