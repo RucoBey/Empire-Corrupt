@@ -6,8 +6,9 @@
   <title>CRYPTO EMPIRE — Tap to Earn</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
   
-  <!-- Gerekli harici kütüphaneler -->
+  <!-- Telegram WebApp Scripti En Başta Olmalı -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Supabase Kütüphanesi -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -19,77 +20,53 @@
     }
     body {
       background: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-serif;
-      min-height: 100vh; overflow-x: hidden; display: flex; flex-direction: column;
+      min-height: 100vh; overflow: hidden; display: flex; flex-direction: column;
       align-items: center; user-select: none; -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
-    body::before {
-      content: ''; position: fixed; inset: 0;
-      background-image: linear-gradient(rgba(0,255,204,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,204,0.03) 1px, transparent 1px);
-      background-size: 40px 40px; pointer-events: none; z-index: 0;
-    }
-    .app { width: 100%; max-width: 420px; min-height: 100vh; display: flex; flex-direction: column; position: relative; z-index: 1; }
-    .header { padding: 12px 16px 8px; display: flex; align-items: center; justify-content: space-between; background: linear-gradient(180deg, rgba(0,255,204,0.07) 0%, transparent 100%); border-bottom: 1px solid var(--border); }
-    .header-left { display: flex; flex-direction: column; }
+    .app { width: 100%; max-width: 420px; height: 100vh; display: flex; flex-direction: column; position: relative; z-index: 1; }
+    .header { padding: 12px 16px 8px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
     .user-name { font-family: 'Orbitron', monospace; font-size: 13px; color: var(--neon); letter-spacing: 2px; text-transform: uppercase; }
-    .user-level { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
-    .header-center { text-align: center; }
+    .user-level { font-size: 11px; color: var(--muted); }
     .game-title { font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 900; background: linear-gradient(135deg, var(--gold), var(--gold2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 3px; }
-    .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-    .league-badge { background: linear-gradient(135deg, #1a2a1a, #0d1a0d); border: 1px solid var(--neon); border-radius: 20px; padding: 3px 10px; font-size: 10px; font-family: 'Orbitron', monospace; color: var(--neon); letter-spacing: 1px; }
+    .league-badge { background: linear-gradient(135deg, #1a2a1a, #0d1a0d); border: 1px solid var(--neon); border-radius: 20px; padding: 3px 10px; font-size: 10px; font-family: 'Orbitron', monospace; color: var(--neon); }
     .coin-display { padding: 16px; text-align: center; }
-    .coin-amount { font-family: 'Orbitron', monospace; font-size: 38px; font-weight: 900; background: linear-gradient(135deg, #FFD700, #FF8C00, #FFD700); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shimmer 3s linear infinite; line-height: 1; }
-    @keyframes shimmer { to { background-position: 200% center; } }
+    .coin-amount { font-family: 'Orbitron', monospace; font-size: 38px; font-weight: 900; color: var(--gold); line-height: 1; }
     .coin-label { font-size: 12px; color: var(--muted); letter-spacing: 3px; margin-top: 2px; }
     .stats-row { display: flex; gap: 8px; padding: 0 16px 12px; }
-    .stat-card { flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 8px 10px; text-align: center; position: relative; overflow: hidden; }
-    .stat-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--neon), transparent); }
+    .stat-card { flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 8px 10px; text-align: center; }
     .stat-val { font-family: 'Orbitron', monospace; font-size: 14px; font-weight: 700; color: var(--gold); }
-    .stat-lbl { font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-top: 1px; }
+    .stat-lbl { font-size: 10px; color: var(--muted); }
     .level-section { padding: 0 16px 12px; }
     .level-info { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 5px; }
-    .level-info span:last-child { color: var(--neon); font-family: 'Orbitron', monospace; }
     .progress-track { height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; border: 1px solid var(--border); }
-    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--neon2), var(--neon)); border-radius: 3px; transition: width 0.5s ease; box-shadow: 0 0 8px var(--neon); }
-    .tap-area { flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px; position: relative; min-height: 260px; }
-    .tap-orb-wrapper { position: relative; width: 220px; height: 220px; }
-    .ring { position: absolute; border-radius: 50%; border: 1px solid; animation: ring-pulse 3s ease-in-out infinite; pointer-events: none; }
-    .ring-1 { inset: -20px; border-color: rgba(0,255,204,0.12); animation-delay: 0s; }
-    .ring-2 { inset: -40px; border-color: rgba(0,255,204,0.07); animation-delay: 0.5s; }
-    .ring-3 { inset: -60px; border-color: rgba(0,255,204,0.04); animation-delay: 1s; }
-    @keyframes ring-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.04); opacity: 0.6; } }
-    .tap-orb { width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #1a3a5c, #050d1a 70%); border: 2px solid rgba(0,255,204,0.3); box-shadow: 0 0 30px rgba(0,255,204,0.15), 0 0 60px rgba(0,191,255,0.1), inset 0 0 40px rgba(0,0,0,0.5); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s ease, box-shadow 0.1s ease; position: relative; overflow: hidden; }
-    .tap-orb:active { transform: scale(0.93); box-shadow: 0 0 50px rgba(0,255,204,0.4), 0 0 100px rgba(0,191,255,0.2), inset 0 0 40px rgba(0,0,0,0.5); }
-    .orb-icon { font-size: 80px; pointer-events: none; filter: drop-shadow(0 0 20px rgba(255,215,0,0.6)); }
-    .float-label { position: fixed; font-family: 'Orbitron', monospace; font-size: 24px; font-weight: 900; color: var(--gold); text-shadow: 0 0 10px rgba(255,215,0,0.8); pointer-events: none; animation: float-up 1s ease-out forwards; z-index: 999; }
-    @keyframes float-up { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-100px) scale(0.8); } }
-    .energy-section { padding: 0 16px 10px; }
-    .energy-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .energy-label { font-size: 11px; color: var(--muted); letter-spacing: 2px; display: flex; align-items: center; gap: 5px; }
-    .energy-label::before { content: '⚡'; font-size: 12px; }
-    .energy-count { font-family: 'Orbitron', monospace; font-size: 11px; color: #FFD700; }
-    .energy-track { height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,165,0,0.2); }
-    .energy-fill { height: 100%; background: linear-gradient(90deg, #FF6600, #FFD700, #FFFF00); border-radius: 4px; transition: width 0.1s linear; box-shadow: 0 0 8px rgba(255,215,0,0.5); }
-    .bottom-nav { display: flex; background: var(--panel); border-top: 1px solid var(--border); padding: 8px 0 max(8px, env(safe-area-inset-bottom)); }
-    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 4px; cursor: pointer; transition: all 0.2s; position: relative; }
-    .nav-item.active { opacity: 1; }
-    .nav-item.active .nav-icon { filter: drop-shadow(0 0 6px var(--neon)); }
-    .nav-item.active .nav-lbl { color: var(--neon); }
-    .nav-item:not(.active) { opacity: 0.4; }
-    .nav-icon { font-size: 22px; }
-    .nav-lbl { font-size: 9px; letter-spacing: 1px; font-family: 'Orbitron', monospace; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--neon2), var(--neon)); width: 0%; transition: width 0.2s; }
+    .tap-area { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
+    .tap-orb-wrapper { position: relative; width: 200px; height: 200px; }
+    .tap-orb { width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #1a3a5c, #050d1a 70%); border: 2px solid rgba(0,255,204,0.3); box-shadow: 0 0 20px rgba(0,255,204,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; transform: scale(1); transition: transform 0.05s ease; }
+    .tap-orb:active { transform: scale(0.92); }
+    .orb-icon { font-size: 70px; pointer-events: none; }
+    .float-label { position: fixed; font-family: 'Orbitron', monospace; font-size: 24px; font-weight: 900; color: var(--gold); pointer-events: none; animation: float-up 0.8s ease-out forwards; z-index: 999; }
+    @keyframes float-up { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-80px); } }
+    .energy-section { padding: 0 16px 20px; }
+    .energy-header { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 11px; }
+    .energy-track { height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
+    .energy-fill { height: 100%; background: linear-gradient(90deg, #FF6600, #FFD700); width: 100%; }
+    .bottom-nav { display: flex; background: var(--panel); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); }
+    .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 12px 0; cursor: pointer; opacity: 0.4; }
+    .nav-item.active { opacity: 1; color: var(--neon); }
+    .nav-icon { font-size: 20px; }
+    .nav-lbl { font-size: 10px; font-family: 'Orbitron', monospace; }
     .screen { display: none; flex: 1; overflow-y: auto; width: 100%; }
     .screen.active { display: flex; flex-direction: column; }
-    .screen-title { font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 700; color: var(--neon); padding: 16px 16px 8px; letter-spacing: 2px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
-    .upgrades-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 12px 16px; }
-    .upgrade-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 12px; cursor: pointer; transition: all 0.2s; text-align: center; }
-    .upgrade-card.affordable { border-color: var(--gold); box-shadow: 0 0 10px rgba(255,215,0,0.1); }
-    .upgrade-icon { font-size: 28px; margin-bottom: 6px; }
-    .upgrade-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
-    .upgrade-level { font-size: 11px; color: var(--neon); font-family: 'Orbitron', monospace; margin-bottom: 6px; }
-    .upgrade-cost { font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; color: var(--gold); }
-    .toast { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); background: #0d1a0d; border: 1px solid var(--neon); border-radius: 20px; padding: 8px 20px; font-family: 'Orbitron', monospace; font-size: 12px; color: var(--neon); z-index: 1000; box-shadow: 0 0 15px rgba(0,255,204,0.3); }
-    .boost-btn { background: linear-gradient(135deg, #FF4466, #FF0066); border: none; border-radius: 8px; padding: 4px 10px; font-family: 'Orbitron', monospace; font-size: 11px; color: white; font-weight: 700; cursor: pointer; margin-top: 10px; }
-    .boost-btn:disabled { background: #222; color: #555; cursor: not-allowed; }
+    .screen-title { font-family: 'Orbitron', monospace; font-size: 16px; color: var(--neon); padding: 16px; border-bottom: 1px solid var(--border); }
+    .upgrades-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 16px; }
+    .upgrade-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; }
+    .upgrade-card.affordable { border-color: var(--gold); }
+    .upgrade-name { font-size: 13px; font-weight: 700; margin: 4px 0; }
+    .upgrade-level { font-size: 11px; color: var(--neon); }
+    .upgrade-cost { font-family: 'Orbitron', monospace; font-size: 12px; color: var(--gold); margin-top: 4px; }
+    .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #0d1a0d; border: 1px solid var(--neon); border-radius: 20px; padding: 6px 16px; font-size: 12px; color: var(--neon); z-index: 1000; }
   </style>
 </head>
 <body>
@@ -101,11 +78,11 @@
       <div class="user-name" id="userName">PLAYER</div>
       <div class="user-level" id="userLevelLabel">LEVEL 1 · BRONZE</div>
     </div>
-    <div class="header-center"><div class="game-title">CRYPTO EMPIRE</div></div>
-    <div class="header-right"><div class="league-badge" id="leagueBadge">BRONZE</div></div>
+    <div class="game-title">CRYPTO EMPIRE</div>
+    <div class="league-badge" id="leagueBadge">BRONZE</div>
   </div>
 
-  <!-- MAIN TAP SCREEN -->
+  <!-- TAP SCREEN -->
   <div class="screen active" id="screen-tap">
     <div class="coin-display">
       <div class="coin-amount" id="coinDisplay">0</div>
@@ -120,23 +97,18 @@
 
     <div class="level-section">
       <div class="level-info"><span id="levelLabel">LEVEL 1</span><span id="levelProgress">0 / 1,000</span></div>
-      <div class="progress-track"><div class="progress-fill" id="levelBar" style="width:0%"></div></div>
+      <div class="progress-track"><div class="progress-fill" id="levelBar"></div></div>
     </div>
 
     <div class="tap-area">
       <div class="tap-orb-wrapper">
-        <div class="ring ring-1"></div><div class="ring ring-2"></div><div class="ring ring-3"></div>
         <div class="tap-orb" id="tapOrb"><div class="orb-icon">💎</div></div>
       </div>
     </div>
 
     <div class="energy-section">
-      <div class="energy-header">
-        <div class="energy-label">ENERGY</div>
-        <div class="energy-count" id="energyCount">500 / 500</div>
-      </div>
-      <div class="energy-track"><div class="energy-fill" id="energyBar" style="width:100%"></div></div>
-      <center><button class="boost-btn" id="boostBtn" onclick="useBoost()">⚡ FULL ENERGY BOOST</button></center>
+      <div class="energy-header"><div>⚡ ENERGY</div><div id="energyCount">500 / 500</div></div>
+      <div class="energy-track"><div class="energy-fill" id="energyBar"></div></div>
     </div>
   </div>
 
@@ -146,7 +118,7 @@
     <div class="upgrades-grid" id="upgradesGrid"></div>
   </div>
 
-  <!-- BOTTOM NAV -->
+  <!-- NAV -->
   <div class="bottom-nav">
     <div class="nav-item active" onclick="showScreen('tap', this)">
       <div class="nav-icon">🪙</div><div class="nav-lbl">TAP</div>
@@ -159,30 +131,32 @@
 </div>
 
 <script>
-// TELEGRAM ENTEGRASYONU
+// TELEGRAM BAŞLATMA
 const tg = window.Telegram.WebApp;
-if (tg) { tg.ready(); tg.expand(); }
+try {
+  tg.ready();
+  tg.expand();
+} catch(e) { console.log("Telegram dışında açıldı."); }
 
-const telegramUser = tg?.initDataUnsafe?.user;
-let playerId = telegramUser ? telegramUser.id : 999999; 
-let username = telegramUser ? (telegramUser.username || telegramUser.first_name) : "GUEST_PLAYER";
+// Kullanıcı Bilgilerini Çek (Telegram yoksa Guest yap)
+let telegramUser = tg?.initDataUnsafe?.user;
+let playerId = telegramUser ? telegramUser.id : 12345678; 
+let username = telegramUser ? (telegramUser.username || telegramUser.first_name) : "TELEGRAM_USER";
 
-// !!! CRITICAL: SUPABASE AYARLARINIZI BURAYA YAZIN !!!
+// !!! BURAYI KENDİ BİLGİLERİNLE DOLDUR !!!
 const SUPABASE_URL = "https://tjaxporolsdkyyfampha.supabase.co";
 const SUPABASE_KEY = "sb_publishable_W7evFdD6UTtJS0kOF7a6Kg_GZDWFeC_";
 let supabase = null;
 
 try {
-  if (SUPABASE_URL !== "https://tjaxporolsdkyyfampha.supabase.co") {
+  if (SUPABASE_URL !== "https://tjaxporolsdkyyfampha.supabase.co" && window.supabase) {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   }
-} catch(e) { console.error("Supabase bağlantı hatası:", e); }
+} catch(e) { console.log("Supabase devre dışı."); }
 
-// OYUN DURUMU (STATE)
-let state = {
-  coins: 0, totalTaps: 0, energy: 500, maxEnergy: 500,
-  tapPower: 1, passiveIncome: 0, level: 1, xp: 0
-};
+// STATE
+let state = { coins: 0, totalTaps: 0, energy: 500, maxEnergy: 500, tapPower: 1, passiveIncome: 0, level: 1, xp: 0 };
+let upgradeLevels = { u1: 0, u2: 0, u3: 0 };
 
 const LEVELS = [
   { level: 1, name: 'BRONZE', xpNeeded: 1000 },
@@ -196,58 +170,36 @@ const UPGRADES = [
   { id: 'u3', name: 'Energy Tank', icon: '🔋', baseCost: 200, scale: 1.8, type: 'energy' }
 ];
 
-let upgradeLevels = { u1: 0, u2: 0, u3: 0 };
-
-// VERİTABANINDAN YÜKLE VEYA YEREL BAŞLAT
-async function loadUserData() {
+// BAŞLANGIÇ (ASENKRON - TELEGRAMI KİLİTLEMEYEN MODEL)
+async function initGame() {
   document.getElementById('userName').textContent = username.toUpperCase();
   
-  let loadedData = null;
-
-  if (supabase) {
-    try {
-      const { data, error } = await supabase.from('players').select('*').eq('telegram_id', playerId).maybeSingle();
-      if (data) loadedData = data;
-    } catch(e) { console.log("Buluttan çekilemedi, yerel hafızaya geçiliyor."); }
-  }
-
-  if (!loadedData) {
-    const local = localStorage.getItem('crypto_empire_save');
-    if (local) loadedData = JSON.parse(local);
-  }
-
-  if (loadedData) {
-    state.coins = loadedData.coins || 0;
-    state.totalTaps = loadedData.total_taps || 0;
-    state.level = loadedData.level || 1;
-    state.passiveIncome = loadedData.passive_income || 0;
-    
-    // Yükseltme seviyelerini hesapla
+  // Önce yerel hafızayı anında yükle (Telegram hemen açılsın diye)
+  const local = localStorage.getItem('tg_game_save_' + playerId);
+  if (local) {
+    let loaded = JSON.parse(local);
+    Object.assign(state, loaded);
     upgradeLevels.u1 = Math.max(0, state.tapPower - 1);
     upgradeLevels.u2 = Math.max(0, state.passiveIncome);
     upgradeLevels.u3 = Math.max(0, (state.maxEnergy - 500) / 100);
-    
-    state.maxEnergy = 500 + (upgradeLevels.u3 * 100);
-    state.tapPower = 1 + upgradeLevels.u1;
   }
-  
-  state.energy = state.maxEnergy;
+
   updateUI();
   renderUpgrades();
-}
 
-async function saveUserData() {
-  localStorage.setItem('crypto_empire_save', JSON.stringify(state));
+  // Supabase bulut verisini arka planda sessizce çek (Açılışı engellemesin)
   if (supabase) {
     try {
-      await supabase.from('players').upsert({
-        telegram_id: playerId,
-        username: username,
-        coins: state.coins,
-        total_taps: state.totalTaps,
-        level: state.level,
-        passive_income: state.passiveIncome
-      }, { onConflict: 'telegram_id' });
+      let { data } = await supabase.from('players').select('*').eq('telegram_id', playerId).maybeSingle();
+      if (data) {
+        state.coins = data.coins;
+        state.totalTaps = data.total_taps;
+        state.level = data.level;
+        state.passiveIncome = data.passive_income;
+        upgradeLevels.u1 = Math.max(0, state.tapPower - 1);
+        upgradeLevels.u2 = Math.max(0, state.passiveIncome);
+        updateUI(); renderUpgrades();
+      }
     } catch(e) {}
   }
 }
@@ -268,10 +220,7 @@ function updateUI() {
   document.getElementById('leagueBadge').textContent = curLvl.name;
 }
 
-function getCost(u) {
-  let lvl = upgradeLevels[u.id];
-  return Math.floor(u.baseCost * Math.pow(u.scale, lvl));
-}
+function getCost(u) { return Math.floor(u.baseCost * Math.pow(u.scale, upgradeLevels[u.id])); }
 
 function renderUpgrades() {
   const grid = document.getElementById('upgradesGrid');
@@ -280,12 +229,7 @@ function renderUpgrades() {
     let cost = getCost(u);
     let card = document.createElement('div');
     card.className = 'upgrade-card' + (state.coins >= cost ? ' affordable' : '');
-    card.innerHTML = `
-      <div class="upgrade-icon">${u.icon}</div>
-      <div class="upgrade-name">${u.name}</div>
-      <div class="upgrade-level">Lvl ${upgradeLevels[u.id]}</div>
-      <div class="upgrade-cost">🪙 ${cost.toLocaleString()}</div>
-    `;
+    card.innerHTML = `<div>${u.icon}</div><div><strong>${u.name}</strong></div><div class="upgrade-level">Lvl ${upgradeLevels[u.id]}</div><div class="upgrade-cost">🪙 ${cost.toLocaleString()}</div>`;
     card.onclick = () => buyUpgrade(u);
     grid.appendChild(card);
   });
@@ -294,50 +238,41 @@ function renderUpgrades() {
 function buyUpgrade(u) {
   let cost = getCost(u);
   if (state.coins >= cost) {
-    state.coins -= cost;
-    upgradeLevels[u.id]++;
+    state.coins -= cost; upgradeLevels[u.id]++;
     if (u.type === 'tap') state.tapPower += 1;
     if (u.type === 'passive') state.passiveIncome += 1;
     if (u.type === 'energy') { state.maxEnergy += 100; state.energy += 100; }
-    saveUserData(); updateUI(); renderUpgrades();
-    showToast("Yükseltme Alındı! ⚡");
-  } else {
-    showToast("Yetersiz Coin! 🪙");
-  }
+    updateUI(); renderUpgrades(); saveGame();
+  } else { showToast("Yetersiz Coin!"); }
 }
 
-// DOKUNMA İŞLEMİ
-document.getElementById('tapOrb').addEventListener('click', (e) => {
+// HEM TIKLAMA HEM MOBİL DOKUNMA DESTEĞİ (TELEGRAM İÇİN ŞART)
+const orb = document.getElementById('tapOrb');
+const triggerTap = (e) => {
+  e.preventDefault();
   if (state.energy >= 1) {
-    state.energy -= 1;
-    state.coins += state.tapPower;
-    state.totalTaps += 1;
-    state.xp += state.tapPower;
+    state.energy -= 1; state.coins += state.tapPower; state.totalTaps += 1; state.xp += state.tapPower;
     
-    // Floating text efekti
+    // Efekt
+    let clientX = e.clientX || (e.touches ? e.touches[0].clientX : window.innerWidth/2);
+    let clientY = e.clientY || (e.touches ? e.touches[0].clientY : window.innerHeight/2);
     let float = document.createElement('div');
     float.className = 'float-label'; float.textContent = `+${state.tapPower}`;
-    float.style.left = e.clientX + 'px'; float.style.top = e.clientY + 'px';
-    document.body.appendChild(float);
-    setTimeout(() => float.remove(), 1000);
+    float.style.left = clientX + 'px'; float.style.top = clientY + 'px';
+    document.body.appendChild(float); setTimeout(() => float.remove(), 800);
 
-    // Seviye Atlama Kontrolü
+    // Seviye
     let curLvl = LEVELS[state.level - 1];
-    if (curLvl && state.xp >= curLvl.xpNeeded && state.level < LEVELS.length) {
-      state.level++; state.xp = 0;
-      showToast("🎉 SEVİYE ATLADINIZ!");
-    }
-
+    if (curLvl && state.xp >= curLvl.xpNeeded && state.level < LEVELS.length) { state.level++; state.xp = 0; showToast("🎉 SEVİYE UP!"); }
     updateUI();
-  } else {
-    showToast("⚡ Enerji kalmadı!");
-  }
-});
+  } else { showToast("⚡ Enerji bitti!"); }
+};
 
-function useBoost() {
-  state.energy = state.maxEnergy;
-  updateUI();
-  showToast("⚡ Enerji Fullendi!");
+orb.addEventListener('touchstart', triggerTap, { passive: false });
+orb.addEventListener('click', triggerTap);
+
+function saveGame() {
+  localStorage.setItem('tg_game_save_' + playerId, JSON.stringify(state));
 }
 
 function showScreen(name, navEl) {
@@ -349,26 +284,30 @@ function showScreen(name, navEl) {
 
 function showToast(msg) {
   let t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
-  document.body.appendChild(t); setTimeout(() => t.remove(), 2000);
+  document.body.appendChild(t); setTimeout(() => t.remove(), 1500);
 }
 
-// DÖNGÜLER
+// DÖNGÜLER (0.1 Saniyede bir stabil akış)
 setInterval(() => {
-  if (state.passiveIncome > 0) {
-    state.coins += (state.passiveIncome / 10);
-    state.xp += (state.passiveIncome / 10);
-    updateUI();
-  }
-  if (state.energy < state.maxEnergy) {
-    state.energy = Math.min(state.maxEnergy, state.energy + 0.1);
-    updateUI();
-  }
+  if (state.passiveIncome > 0) { state.coins += (state.passiveIncome / 10); state.xp += (state.passiveIncome / 10); }
+  if (state.energy < state.maxEnergy) { state.energy = Math.min(state.maxEnergy, state.energy + 0.1); }
+  updateUI();
 }, 100);
 
-// Her 5 saniyede bir kaydet
-setInterval(saveUserData, 5000);
+// Bulut Yedekleme (Her 7 saniyede bir Telegram'ı yormadan veritabanına)
+setInterval(async () => {
+  saveGame();
+  if (supabase && telegramUser) {
+    try {
+      await supabase.from('players').upsert({
+        telegram_id: playerId, username: username, coins: Math.floor(state.coins),
+        total_taps: state.totalTaps, level: state.level, passive_income: state.passiveIncome
+      }, { onConflict: 'telegram_id' });
+    } catch(e) {}
+  }
+}, 7000);
 
-window.onload = loadUserData;
+window.onload = initGame;
 </script>
 </body>
 </html>
